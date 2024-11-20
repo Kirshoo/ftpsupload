@@ -1,13 +1,25 @@
 ## FTPS Upload
 Currently works only in bash environment.
 
+Uploads a copy of a directory onto the ftp server
+
 ### How to use this
 ```
 ./upload.sh [directory]
 ```
 `[directory]` is an optional parameter that will specify the directory, from witch files will uploaded
-By default its set to the current directory
+By default its set to the current directory.
 
+Script will look for `.ftpsignore` file, so existence of one is a mandatory
+To upload the files, `pushToServer.sh` will also look for `.env` file to get the necessary information about the server:
+- `$FTP_SERVER`   - the address of the server
+- `$FTP_USERNAME` - name of the user, that will be connected to the server
+- `$FTP_PASSWORD` - password for the user
+
+### TODOs
+- Make the existence of .ftpsignore optional
+
+## Some Runt about it
 This is little bash script allows me to upload files from a directory to my FTP server.
 How hard could this be, I hear you asking. Well, apperently globbing is not what I was after...
 

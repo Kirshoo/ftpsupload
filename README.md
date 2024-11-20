@@ -1,6 +1,13 @@
 ## FTPS Upload
 Currently works only in bash environment.
 
+### How to use this
+```
+./upload.sh [directory]
+```
+`[directory]` is an optional parameter that will specify the directory, from witch files will uploaded
+By default its set to the current directory
+
 This is little bash script allows me to upload files from a directory to my FTP server.
 How hard could this be, I hear you asking. Well, apperently globbing is not what I was after...
 
@@ -25,6 +32,8 @@ Thus the `curl` was chosen!
 That's an unusual road block. `curl` cannot transfer directories as is,
 so we need to pass only files. But how can we open the directory inside bash?
 Turns out, quite easily - just use recursion!
+
+The `pushToServer.sh` just pushes the files, we passed to it as arguments, to the server
 
 #### And this is where we are right now
 Hope you find a use for this tool. Enjoy :D

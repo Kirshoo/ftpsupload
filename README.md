@@ -3,6 +3,16 @@ Currently works only in bash environment.
 
 Uploads a copy of a directory onto the ftp server
 
+### How to install ftpsupload
+Pretty easy! (Mainly because its only works in bash)
+
+Run the following command in your bash terminal
+```
+git clone https://github.com/Kirshoo/ftpsupload.git
+```
+
+Now for script to work properly, you only need to create `.env` with all necessary information about the server as shown below
+
 ### How to use this
 ```
 ./upload.sh [directory]

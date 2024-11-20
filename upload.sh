@@ -32,39 +32,35 @@ done
 # and dont match patterns in .ftpsignore
 FILES_TO_UPLOAD=()
 
-
-# Go through each file in the target derectory 
+# Go through each file in the target derectory
 # and match them with regex patterns
-for file in $TARGET_DIR/*; do
-    filename=$(basename "$file")
-    matched=true
+# If directory is encountered, recursively go through its files and filter them
+filterFiles() {
+    for file in $1/*; do
+        filename=$(basename "$file")
+        matched=true
 
-    for regex in "${REGEX_PATTERNS[@]}"; do
-        if [[ $filename =~ $regex ]]; then
-            matched=false
-            break
+        for regex in "${REGEX_PATTERNS[@]}"; do
+            if [[ $filename =~ $regex ]]; then
+                matched=false
+                break
+            fi
+        done
+
+        if $matched; then
+            if [[ -d $file ]]; then
+                filterFiles $file
+            elif [[ -f $file ]] && ! [[ $filename =~ , ]]; then
+                # Since we bundle files together in pushToServer.sh
+                # We need to ensure that no files contain commas in their name
+                echo "$file will be uploaded"
+                FILES_TO_UPLOAD+=($file)
+            fi
         fi
     done
-
-    if $matched; then
-        echo "$file will be uploaded"
-        FILES_TO_UPLOAD+=($file)
-    fi
-done
+}
 
 # optout the extended gobbling
 shopt -u extglob
-
-: << COMMENT
-for file in "${FILES_TO_UPLOAD[@]}"; do
-    if [[ -d $file ]]; then
-        echo "$file is a directory"
-    elif [[ -f $file ]]; then
-        echo "$file is a valid file"
-    else
-        echo "$file is not a valid bungaloo"
-    fi
-done
-COMMENT
 
 /bin/bash pushToServer.sh ${FILES_TO_UPLOAD[@]}

@@ -6,7 +6,7 @@ IGNORE_FILE=".ftpsignore"
 # Parse ignore patterns
 IGNORED_PATTERNS=($(grep -v -e "^\s*$" -e "^#" "$IGNORE_FILE"))
 
-TARGET_DIR="."
+TARGET_DIR="${1:-"."}"
 
 # Allow for extended globbing
 shopt -s extglob
@@ -32,9 +32,10 @@ done
 # and dont match patterns in .ftpsignore
 FILES_TO_UPLOAD=()
 
+
 # Go through each file in the target derectory 
 # and match them with regex patterns
-for file in "$TARGET_DIR"/*; do
+for file in $TARGET_DIR/*; do
     filename=$(basename "$file")
     matched=true
 
@@ -46,16 +47,24 @@ for file in "$TARGET_DIR"/*; do
     done
 
     if $matched; then
-        echo "$filename will be uploaded"
-        FILES_TO_UPLOAD+=("$filename")
+        echo "$file will be uploaded"
+        FILES_TO_UPLOAD+=($file)
     fi
 done
 
 # optout the extended gobbling
 shopt -u extglob
 
-for file in ${FILES_TO_UPLOAD[@]}; do
-    echo "Uploading $file"
+: << COMMENT
+for file in "${FILES_TO_UPLOAD[@]}"; do
+    if [[ -d $file ]]; then
+        echo "$file is a directory"
+    elif [[ -f $file ]]; then
+        echo "$file is a valid file"
+    else
+        echo "$file is not a valid bungaloo"
+    fi
 done
+COMMENT
 
 /bin/bash pushToServer.sh ${FILES_TO_UPLOAD[@]}

@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# Get environment variables
-source .env
-
 # Load ignore patterns from .ftpsignore
 IGNORE_FILE=".ftpsignore"
 
@@ -30,23 +27,35 @@ for pattern in "${IGNORED_PATTERNS[@]}"; do
     REGEX_PATTERNS+=("$(glob_to_regex "$pattern")")
 done
 
+# Initialize an empty collection of files
+# This will be filled with files, that are going to be uploaded
+# and dont match patterns in .ftpsignore
+FILES_TO_UPLOAD=()
+
 # Go through each file in the target derectory 
 # and match them with regex patterns
 for file in "$TARGET_DIR"/*; do
     filename=$(basename "$file")
-    matched=false
+    matched=true
 
     for regex in "${REGEX_PATTERNS[@]}"; do
         if [[ $filename =~ $regex ]]; then
-            matched=true
+            matched=false
             break
         fi
     done
 
     if $matched; then
-        echo "$filename matches pattern"
+        echo "$filename will be uploaded"
+        FILES_TO_UPLOAD+=("$filename")
     fi
 done
 
 # optout the extended gobbling
 shopt -u extglob
+
+for file in ${FILES_TO_UPLOAD[@]}; do
+    echo "Uploading $file"
+done
+
+/bin/bash pushToServer.sh ${FILES_TO_UPLOAD[@]}

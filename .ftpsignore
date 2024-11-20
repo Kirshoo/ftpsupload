@@ -1,0 +1,7 @@
+# Common patterns to exclude
+*.log
+*.tmp
+*.sh
+node_modules
+*.awk
+!important.log

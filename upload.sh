@@ -1,10 +1,24 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# Load ignore patterns from .ftpsignore
+if [ ! -f ".env" ]; then
+    echo "Please create .env file, that contains all necessary variables"
+    echo "FTP_SERVER - the ftp(s) address of the server in a from \"ftp://ftp.example.com\""
+    echo "FTP_USERNAME - username, which will be connecting to the server to perform file upload"
+    echo "FTP_PASSWORD - password of the username"
+    exit 0
+else
+    source ".env"
+fi
+
 IGNORE_FILE=".ftpsignore"
 
-# Parse ignore patterns
-IGNORED_PATTERNS=($(grep -v -e "^\s*$" -e "^#" "$IGNORE_FILE"))
+# If ignore files exists
+if [ -f $IGNORE_FILE ]; then
+    # Parse ignore patterns
+    IGNORED_PATTERNS=($(grep -v -e "^\s*$" -e "^#" "$IGNORE_FILE"))
+else 
+    IGNORED_PATTERNS=()
+fi
 
 TARGET_DIR="${1:-"."}"
 
@@ -39,7 +53,8 @@ filterFiles() {
     for file in $1/*; do
         filename=$(basename "$file")
         matched=true
-
+	
+	# Match file with every regex pattern
         for regex in "${REGEX_PATTERNS[@]}"; do
             if [[ $filename =~ $regex ]]; then
                 matched=false
@@ -49,18 +64,26 @@ filterFiles() {
 
         if $matched; then
             if [[ -d $file ]]; then
+		# If directory is found, go over its files and filter them out
                 filterFiles $file
-            elif [[ -f $file ]] && ! [[ $filename =~ , ]]; then
-                # Since we bundle files together in pushToServer.sh
-                # We need to ensure that no files contain commas in their name
-                echo "$file will be uploaded"
+            elif [[ -f $file ]]; then
+		# If file is found, add it to the list of files
                 FILES_TO_UPLOAD+=($file)
             fi
         fi
     done
 }
 
+filterFiles $TARGET_DIR
+
 # optout the extended gobbling
 shopt -u extglob
 
-/bin/bash pushToServer.sh ${FILES_TO_UPLOAD[@]}
+# Upload file to the server
+# Parameters are taken from .env file
+for file in "${FILES_TO_UPLOAD[@]}"; do
+	echo "Uploading $file"
+	curl -T $file --user "$FTP_USERNAME:$FTP_PASSWORD" "$FTP_SERVER"
+done
+
+exit 0

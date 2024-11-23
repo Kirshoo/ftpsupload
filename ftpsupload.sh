@@ -22,9 +22,6 @@ fi
 
 TARGET_DIR="${1:-"."}"
 
-# Allow for extended globbing
-shopt -s extglob
-
 # Function to turn a globbing regex to regular regex
 # All credit is to dan93-93
 glob_to_regex() {
@@ -33,7 +30,7 @@ glob_to_regex() {
     regex="${regex//\*/.*}"
     regex="${regex//\?/.}"
     regex="${regex//\[\\!/[^\]}"
-    echo "$regex"
+    echo "$regex\$"
 }
 
 # Transform all patterns from .ftpsignore to a regex
@@ -46,6 +43,9 @@ done
 # and dont match patterns in .ftpsignore
 FILES_TO_UPLOAD=()
 
+# Allow for extended globbing
+shopt -s extglob
+
 # Go through each file in the target derectory
 # and match them with regex patterns
 # If directory is encountered, recursively go through its files and filter them
@@ -53,16 +53,29 @@ filterFiles() {
     for file in $1/*; do
         filename=$(basename "$file")
         matched=true
+	negated=false
+
+	echo "Found $filename"
 	
 	# Match file with every regex pattern
         for regex in "${REGEX_PATTERNS[@]}"; do
-            if [[ $filename =~ $regex ]]; then
-                matched=false
-                break
+	    if [[ "$regex" =~ ^\^! ]]; then
+		echo "    Negated regex is found"
+		negated_regex="^${regex:2}"
+		echo "    Changing $regex into $negated_regex"
+		if [[ $filename =~ $negated_regex ]]; then
+		    negated=true
+		    matched=true
+	        fi
+	    else
+                if [[ $filename =~ $regex ]]; then
+		    echo "    $file is ignored because of $regex"
+                    matched=false
+		fi
             fi
         done
 
-        if $matched; then
+        if $matched || $negated; then
             if [[ -d $file ]]; then
 		# If directory is found, go over its files and filter them out
                 filterFiles $file

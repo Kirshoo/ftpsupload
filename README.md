@@ -15,22 +15,18 @@ Now for script to work properly, you only need to create `.env` with all necessa
 
 ### How to use this
 ```
-./upload.sh [directory]
+./ftpsupload.sh [directory]
 ```
-`[directory]` is an optional parameter that will specify the directory, from witch files will uploaded
+`[directory]` is an optional parameter that will specify the directory, from witch files will uploaded.\
 By default its set to the current directory.
 
-Script will look for `.ftpsignore` file, so existence of one is a mandatory
-To upload the files, `pushToServer.sh` will also look for `.env` file to get the necessary information about the server:
+To upload the files, `ftpsupload.sh` will also look for `.env` file to get the necessary information about the server:
 - `$FTP_SERVER`   - the address of the server
 - `$FTP_USERNAME` - name of the user, that will be connected to the server
 - `$FTP_PASSWORD` - password for the user
 
-### TODOs
-- Make the existence of .ftpsignore optional
-
 ## Some Runt about it
-This is little bash script allows me to upload files from a directory to my FTP server.
+This is little bash script allows me to upload files from a directory to my FTP server.\
 How hard could this be, I hear you asking. Well, apperently globbing is not what I was after...
 
 ### How hard could this be?
@@ -41,11 +37,11 @@ Then we need to transform those globbing patterns into a usable regex.
 
 Only then can we start looking at the files inside of a target directory.
 
-We use .ftpsignore to ignore the files, we essentially need to inverse the regex outcome:
+We use .ftpsignore to ignore the files, we essentially need to inverse the regex outcome:\
 Instead the matched files, unmached files will be uploaded.
 
 To upload the files one would usually use something like Firezilla or any other application that has encryption and stuff.
-My FTP server is not a fun of security so we have to use an `ftp` connection.
+My FTP server is not a fond of security so we have to use an `ftp` connection.
 
 `ftp` is good, but it has its limits, esspecially when writing scripts with it.
 Thus the `curl` was chosen!
@@ -56,6 +52,9 @@ so we need to pass only files. But how can we open the directory inside bash?
 Turns out, quite easily - just use recursion!
 
 The `pushToServer.sh` just pushes the files, we passed to it as arguments, to the server
+
+#### Ommited `pushToServer.sh` functionality
+Since `pushToServer.sh` performs a "single" line command, I decided to put the entirity of it into `ftpsupload.sh` for simplicity's sake
 
 #### And this is where we are right now
 Hope you find a use for this tool. Enjoy :D

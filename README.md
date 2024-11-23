@@ -25,6 +25,12 @@ To upload the files, `ftpsupload.sh` will also look for `.env` file to get the n
 - `$FTP_USERNAME` - name of the user, that will be connected to the server
 - `$FTP_PASSWORD` - password for the user
 
+Script uses `.ftpsignore` file for getting file patterns to be ignored (not uploaded).\
+The rules follow those of `.gitignore` (although not all of them):
+- `*.log`          - will ignore all files that end with .log
+- `abcd?.log`      - will ignore all files that start with abcd, end with .log and have any one character
+- `!important.log` - will not ignore files that have name `important.log`
+
 ## Some Runt about it
 This is little bash script allows me to upload files from a directory to my FTP server.\
 How hard could this be, I hear you asking. Well, apperently globbing is not what I was after...
